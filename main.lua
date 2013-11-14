@@ -1,7 +1,7 @@
 function love.load()
    initMenu()
-   ball = love.graphics.newImage("ball.png")
-  -- love.mouse.setVisible(false)
+   ball = love.graphics.newImage("arrow2.png")
+   love.mouse.setVisible(false)
    love.graphics.setBackgroundColor(150,230,255)
 
    rect = {
@@ -18,7 +18,7 @@ function love.draw()
    if menu.visible then
       menu:draw()
    end
---   love.graphics.draw(ball, love.mouse.getX(), love.mouse.getY())
+   love.graphics.draw(ball, love.mouse.getX(), love.mouse.getY())
    love.graphics.print("Menu: ".. tostring(menu.visible) .. ", Stat: " .. menu.stat , 10, 20)
    local x,y = love.mouse.getX(), love.mouse.getY()
    love.graphics.print("Report: " .. tostring(x > menu.x) .. " " .. tostring(x < menu.x + menu.width) .. " ", 10,40)
