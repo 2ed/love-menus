@@ -1,7 +1,7 @@
 function love.load()
    initMenu()
    ball = love.graphics.newImage("ball.png")
-   love.mouse.setVisible(false)
+  -- love.mouse.setVisible(false)
    love.graphics.setBackgroundColor(150,230,255)
 
    rect = {
@@ -18,8 +18,10 @@ function love.draw()
    if menu.visible then
       menu:draw()
    end
-   love.graphics.draw(ball, love.mouse.getX(), love.mouse.getY())
-   love.graphics.print("Menu: ".. tostring(menu.visible) .. ", Stat:" .. menu.stat , 10, 20)
+--   love.graphics.draw(ball, love.mouse.getX(), love.mouse.getY())
+   love.graphics.print("Menu: ".. tostring(menu.visible) .. ", Stat: " .. menu.stat , 10, 20)
+   local x,y = love.mouse.getX(), love.mouse.getY()
+   love.graphics.print("Report: " .. tostring(x > menu.x) .. " " .. tostring(x < menu.x + menu.width) .. " ", 10,40)
 end
 
 function love.mousepressed(x, y, button)
@@ -51,7 +53,14 @@ function love.update(dt)
 end
 
 function love.mousereleased(x, y, button)
-   if button == "l" then rect.dragging.active = false end
+   if button == "l" then 
+      rect.dragging.active = false 
+      if menu.visible then
+	 if x > menu.x and x < menu.x + menu.width and y > menu.y and y > menu.y + menu.height then
+--	    local action = 
+	 end
+      end
+   end
 end
 
 function initMenu()
@@ -68,9 +77,22 @@ function initMenu()
    menu.draw = function (self)
 		  love.graphics.setColor(255,100,200)
 		  love.graphics.rectangle("fill",menu.x, menu.y, menu.width, menu.height)
+		  local x,y = love.mouse.getX() , love.mouse.getY()
 		  love.graphics.setColor(255,255,255)
+  		  for i = 1, #menu.items do
+		     if (x > menu.x and x < menu.x + menu.width and y > menu.y + (i - 1)*14 
+		      and y < menu.y + i*14) then
+			love.graphics.setColor(255,50,100)
+			love.graphics.rectangle("fill", menu.x + 1, menu.y + (i - 1)*14 +1,
+						menu.width - 2, 16)
+			love.graphics.setColor(255,255,255)
+		     end
+--		     love.graphics.print(menu.items[i][1], menu.x + 2, menu.y + (i -1)*14 + 2)
+		     love.graphics.rectangle("fill", menu.x + 2, menu.y + (i-1)*(14+2), menu.width - 4, 12)
+		  end
 	       end
    menu.items = {
+      {"do nothing"};
       {"close", menu.toggle};
    }
    
@@ -79,7 +101,7 @@ function initMenu()
    for i in ipairs(menu.items) do
       width = math.max(width,string.len(menu.items[i][1]))
    end
-   menu.width = width*8 + 4
-   menu.height = #menu.items * 12 + 4
+   menu.width = width*7 + 4
+   menu.height = #menu.items * 14 + 4
 end
 
