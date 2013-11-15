@@ -1,9 +1,8 @@
 function love.load()
    initMenu()
    ball = love.graphics.newImage("arrow2.png")
-   love.mouse.setVisible(false)
    love.graphics.setBackgroundColor(150,230,255)
-
+   love.mouse.setVisible(false)
    rect = {
       x = 100,
       y = 100,
@@ -14,14 +13,18 @@ function love.load()
 end
 
 function love.draw()
+   local x,y = love.mouse.getX(), love.mouse.getY()
    love.graphics.rectangle("fill", rect.x, rect.y, rect.width, rect.height)
    if menu.visible then
       menu:draw()
    end
-   love.graphics.draw(ball, love.mouse.getX(), love.mouse.getY())
-   love.graphics.print("Menu: ".. tostring(menu.visible) .. ", Stat: " .. menu.stat , 10, 20)
-   local x,y = love.mouse.getX(), love.mouse.getY()
-   love.graphics.print("Report: " .. tostring(x > menu.x) .. " " .. tostring(x < menu.x + menu.width) .. " ", 10,40)
+   local print = {
+      "FPS: " .. love.timer.getFPS()
+   }
+   for i,a in ipairs(print) do
+      love.graphics.print(a,10,i*20)
+   end
+   love.graphics.draw(ball, x, y)
 end
 
 function love.mousepressed(x, y, button)
@@ -34,18 +37,11 @@ function love.mousepressed(x, y, button)
     rect.dragging.diffY = y - rect.y
   end
   if button == "r" then
-     menu:toggle(x,y)
+     menu.toggle()
   end
 end
 
 function love.update(dt)
-   menu.stat = ""
-   for j,k in pairs(menu) do 
-      if type(k) == "number" then
-	 menu.stat = menu.stat .. tostring(j) .. " = " .. tostring(k) .. " "
-      end
-   end
-
   if rect.dragging.active then
      rect.x = love.mouse.getX() - rect.dragging.diffX
      rect.y = love.mouse.getY() - rect.dragging.diffY
@@ -70,30 +66,40 @@ function initMenu()
    menu.x = 0
    menu.y = 0
    menu.visible = false
-   menu.toggle = function (self,x,y)
-		    self.visible = not self.visible
-		    menu.x, menu.y = x,y
+   menu.toggle = function ()
+		    menu.visible = not menu.visible
+		    if menu.visible then
+		       menu.x, menu.y = math.min(love.mouse.getX(),love.graphics.getWidth()-menu.width),
+		       math.min(love.mouse.getY(),love.graphics.getHeight()-menu.height)
+		    end
 		 end
    menu.draw = function (self)
 		  love.graphics.setColor(255,100,200)
-		  love.graphics.rectangle("fill",menu.x, menu.y, menu.width, menu.height)
+		  love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
 		  local x,y = love.mouse.getX() , love.mouse.getY()
 		  love.graphics.setColor(255,255,255)
-  		  for i = 1, #menu.items do
-		     if (x > menu.x and x < menu.x + menu.width and y > menu.y + (i - 1)*14 
-		      and y < menu.y + i*14) then
+  		  for i = 1, #self.items do
+		     if (x >= self.x and x <= self.x + self.width and y > self.y + (i - 1)*15
+		      and y <= self.y + i*15) then
 			love.graphics.setColor(255,50,100)
-			love.graphics.rectangle("fill", menu.x + 1, menu.y + (i - 1)*14 +1,
-						menu.width - 2, 16)
+			love.graphics.rectangle("fill", self.x + 1, self.y + (i -1)*15 + 1,
+						self.width - 2, 15)
 			love.graphics.setColor(255,255,255)
+			if love.mouse.isDown('l') and self.items[i][2] 
+			             and type(self.items[i][2]) == "function" then
+				     self.items[i][2]()
+			end
 		     end
---		     love.graphics.print(menu.items[i][1], menu.x + 2, menu.y + (i -1)*14 + 2)
-		     love.graphics.rectangle("fill", menu.x + 2, menu.y + (i-1)*(14+2), menu.width - 4, 12)
+		     love.graphics.print(self.items[i][1], self.x + 2, self.y + (i -1)*15 + 2)
+		     --love.graphics.rectangle("fill", self.x + 2, self.y + (i-1)*(15) + 2, self.width - 4, 13)
 		  end
 	       end
    menu.items = {
       {"do nothing"};
       {"close", menu.toggle};
+      {"more"};
+      {"menu things"};
+      {"such length! most unexpectable!"};
    }
    
    menu.stat = ""
@@ -102,6 +108,6 @@ function initMenu()
       width = math.max(width,string.len(menu.items[i][1]))
    end
    menu.width = width*7 + 4
-   menu.height = #menu.items * 14 + 4
+   menu.height = #menu.items * 15 + 2
 end
 
